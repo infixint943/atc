@@ -13,6 +13,10 @@ import (
 const manPage = `
 Usage:
   atc config
+  atc gen [-A]
+
+Options:
+  -A, --all                   force the selection menu to appear
 `
 
 func main() {
@@ -37,6 +41,8 @@ func main() {
 	switch {
 	case opt.Config:
 		opt.RunConfig()
+	case opt.Gen:
+		opt.RunGen()
 	}
 	return
 }
