@@ -4,6 +4,7 @@ import (
 	cln "atc/client"
 	cfg "atc/config"
 	pkg "atc/packages"
+	"net/url"
 
 	"errors"
 	"os"
@@ -35,8 +36,8 @@ func (opt Opts) RunConfig() {
 		addTmplt()
 	case 2:
 		remTmplt()
-		// case 3:
-		// 	miscPrefs()
+	case 3:
+		miscPrefs()
 	}
 	return
 }
@@ -201,5 +202,75 @@ func remTmplt() {
 	cfg.SaveTemplates()
 
 	pkg.Log.Success("Templated removed successfully")
+	return
+}
+
+func miscPrefs() {
+	var choice int
+	err := survey.AskOne(&survey.Select{
+		Message: "Select configuration:",
+		Options: []string{
+			"Set default template",
+			"Run gen after fetch",
+			"Set host domain",
+			"Set proxy",
+		},
+	}, &choice)
+	pkg.PrintError(err, "")
+
+	switch choice {
+	case 0:
+		// set default template
+		err := survey.AskOne(&survey.Select{
+			Message: "Select template",
+			Options: append([]string{"None"}, cfg.ListTmplts(-1)...),
+		}, &cfg.Settings.DfltTmplt)
+		cfg.Settings.DfltTmplt--
+		pkg.PrintError(err, "")
+
+	case 1:
+		// set GenOnFetch
+		err := survey.AskOne(&survey.Confirm{
+			Message: "Run gen after fetch?",
+			Help: "If set to true, default template will be created for each fetched problem.\n" +
+				"Default template has to be configured for this feature to work",
+			Default: false,
+		}, &cfg.Settings.GenOnFetch)
+		pkg.PrintError(err, "")
+
+	case 2:
+		// set host domain
+		err := survey.AskOne(&survey.Input{
+			Message: "Url of host:",
+			Help: "Host atcoder domain to fetch data from\n" +
+				"Current host: " + cfg.Settings.Host,
+			Default: "https://atcoder.jp",
+		}, &cfg.Settings.Host, survey.WithValidator(func(ans interface{}) error {
+			_, err := url.ParseRequestURI(ans.(string))
+			return err
+		}))
+		pkg.PrintError(err, "")
+
+	case 3:
+		// validate and set proxy
+		err := survey.AskOne(&survey.Input{
+			Message: "Proxy url:",
+			Help: "Set a new proxy (should match protocol://host[:port])\n" +
+				"Leave blank to reset to environment proxy\n" +
+				"Current proxy: " + cfg.Settings.Proxy,
+			Default: "",
+		}, &cfg.Settings.Proxy, survey.WithValidator(func(ans interface{}) error {
+			// reset to environment proxy
+			if ans.(string) == "" {
+				return nil
+			}
+			_, err := url.ParseRequestURI(ans.(string))
+			return err
+		}))
+		pkg.PrintError(err, "")
+	}
+	cfg.SaveSettings()
+
+	pkg.Log.Success("Configurations successfully set")
 	return
 }
