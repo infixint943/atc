@@ -9,5 +9,6 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/infixint943/cookiejar v0.0.0-20200406153408-7090823dc9f2
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/oleiade/serrure v0.0.0-20160812094227-28794589ac9b
 )
