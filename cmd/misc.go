@@ -3,6 +3,10 @@ package cmd
 import (
 	cfg "atc/config"
 
+	"net/url"
+	"os"
+	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -16,6 +20,7 @@ type (
 	Opts struct {
 		Config bool `docopt:"config"`
 		Gen    bool `docopt:"gen"`
+		Open   bool `docopt:"open"`
 
 		Info []string `docopt:"<info>"`
 
@@ -23,6 +28,8 @@ type (
 
 		contest string
 		problem string
+		dirPath string
+		link    url.URL
 	}
 
 	// Env are global (generic and non-generic) variables
@@ -39,6 +46,71 @@ type (
 		File    string `env:"${file}"`
 	}
 )
+
+// FindContestData extracts contest / problem id from path
+func (opt *Opts) FindContestData() {
+	// path to current directory
+	currPath, _ := os.Getwd()
+
+	if len(opt.Info) == 0 {
+		// no contest id given in flags. Fetch from folder path
+		data := strings.Split(currPath, string(os.PathSeparator))
+		data = append(data, make([]string, 10)...)
+		sz := len(data) - 10
+
+		// cleans path to return dir path to root folder
+		clean := func(i int) string {
+			str := filepath.Join(data[i:]...)
+			return strings.TrimSuffix(currPath, str)
+		}
+		// find last directory matching 'Settings.WSName'
+		for i := sz - 1; i >= 0; i-- {
+			// current folder name matches configured WSName
+			if data[i] == cfg.Settings.WSName {
+				// set contestClass, contest and problem
+				opt.contest = data[i+1]
+				opt.problem = data[i+2]
+				currPath = clean(i)
+				break
+			}
+		}
+	} else if _, err := url.ParseRequestURI(opt.Info[0]); err == nil {
+		// url given in the flags. parse data from url
+		data := strings.Split(opt.Info[0], "/")
+		// prevent out-of-bounds accessing
+		data = append(data, make([]string, 10)...)
+		sz := len(data) - 10
+		// iterate over each part of url and
+		// find first part matching criteria
+		for i := 0; i < sz; i++ {
+			if data[i] == "contests" {
+				opt.contest = data[i+1]
+				// convert '_' to '-' in problem
+				data[i+3] = strings.ReplaceAll(data[i+3], "_", "-")
+				// remove contest prefix from problem string
+				opt.problem = strings.TrimPrefix(data[i+3], data[i+1]+"-")
+				break
+			}
+		}
+	} else {
+		// parse from command line args (for example, abc123 e)
+		data := append(opt.Info, make([]string, 10)...)
+		// set contest and problem id from flags
+		opt.contest = data[0]
+		opt.problem = data[1]
+	}
+	// convert problem id to lowercase
+	opt.problem = strings.ToLower(opt.problem)
+	// set path to folder containing contClass
+	opt.dirPath = filepath.Join(currPath, cfg.Settings.WSName)
+	// set common link to contest
+	// dereference the url variable
+	link, _ := url.Parse(cfg.Settings.Host)
+	link.Path = path.Join(link.Path, "contests", opt.contest)
+	opt.link = *link
+
+	return
+}
 
 // ReplPlaceholder replaces all global variables in text
 // with their respective values. Non-generic are passed as map
@@ -68,3 +140,11 @@ func (e Env) ReplPlaceholder(text string) string {
 
 	return text
 }
+
+/*
+Parsing structure of problems
+-----------------------------
+- WSName
+  - ${contest}
+    - ${problem}
+*/

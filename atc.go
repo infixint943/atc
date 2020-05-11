@@ -14,6 +14,7 @@ const manPage = `
 Usage:
   atc config
   atc gen [-A]
+  atc open [<info>...]
 
 Options:
   -A, --all                   force the selection menu to appear
@@ -34,7 +35,7 @@ func main() {
 	// and extract contest type / path
 	opt := cmd.Opts{}
 	args.Bind(&opt)
-	// opt.FindContestData()
+	opt.FindContestData()
 	// pkg.IsAPI(opt.API)
 
 	// run function based on subcommand
@@ -43,6 +44,9 @@ func main() {
 		opt.RunConfig()
 	case opt.Gen:
 		opt.RunGen()
+	case opt.Open:
+		opt.RunOpen()
+
 	}
 	return
 }
