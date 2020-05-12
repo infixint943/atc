@@ -22,10 +22,16 @@ type (
 		Gen    bool `docopt:"gen"`
 		Open   bool `docopt:"open"`
 		Fetch  bool `docopt:"fetch"`
+		Test   bool `docopt:"test"`
 
 		Info []string `docopt:"<info>"`
 
-		All bool `docopt:"--all"`
+		All    bool   `docopt:"--all"`
+		File   string `docopt:"--file"`
+		IgCase bool   `docopt:"--ignore-case"`
+		Exp    int    `docopt:"--ignore-exp"`
+		Tl     int    `docopt:"--time-limit"`
+		Custom bool   `docopt:"--custom"`
 
 		contest string
 		problem string
