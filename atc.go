@@ -13,8 +13,9 @@ import (
 const manPage = `
 Usage:
   atc config
-  atc gen [-A]
-  atc open [<info>...]
+  atc gen    [-A]
+  atc open   [<info>...]
+  atc fetch  [<info>...]
 
 Options:
   -A, --all                   force the selection menu to appear
@@ -46,7 +47,8 @@ func main() {
 		opt.RunGen()
 	case opt.Open:
 		opt.RunOpen()
-
+	case opt.Fetch:
+		opt.RunFetch()
 	}
 	return
 }

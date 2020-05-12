@@ -19,6 +19,9 @@ func GetReqBody(client *http.Client, url string) ([]byte, error) {
 	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode == 404 {
+		// return blank page, to signify contest doesn't exist
+		return nil, nil
 	}
 	return parseBody(resp)
 }

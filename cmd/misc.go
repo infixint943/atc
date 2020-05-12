@@ -21,6 +21,7 @@ type (
 		Config bool `docopt:"config"`
 		Gen    bool `docopt:"gen"`
 		Open   bool `docopt:"open"`
+		Fetch  bool `docopt:"fetch"`
 
 		Info []string `docopt:"<info>"`
 
