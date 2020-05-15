@@ -23,6 +23,7 @@ type (
 		Open   bool `docopt:"open"`
 		Fetch  bool `docopt:"fetch"`
 		Test   bool `docopt:"test"`
+		Submit bool `docopt:"submit"`
 
 		Info []string `docopt:"<info>"`
 

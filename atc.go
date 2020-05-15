@@ -17,6 +17,7 @@ Usage:
   atc open   [<info>...]
   atc fetch  [<info>...]
   atc test   [[-i -e<e> -t<t>] | -C] [-f<f>]
+  atc submit [<info>... -f<f>]
 
 Options:
   -A, --all                   force the selection menu to appear
@@ -59,6 +60,8 @@ func main() {
 		opt.RunFetch()
 	case opt.Test:
 		opt.RunTest()
+	case opt.Submit:
+		opt.RunSubmit()
 	}
 	return
 }

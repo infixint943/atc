@@ -5,6 +5,7 @@ import (
 	pkg "atc/packages"
 
 	"encoding/hex"
+	"fmt"
 	"net/url"
 	"path"
 
@@ -68,4 +69,22 @@ func LoggedInUsr() (string, error) {
 	}
 
 	return pkg.FindHandle(body), nil
+}
+
+// Relogin extracts handle/passwd from sessions.json
+// and log's in with the credentials and returns status
+func Relogin() (bool, error) {
+	// decode hex data of encrypted password
+	ciphertext, err := hex.DecodeString(cfg.Session.Passwd)
+	if err != nil {
+		err := fmt.Errorf("Failed to decode password")
+		return false, err
+	}
+	usr := cfg.Session.Handle
+	dec := aes.NewAES256Decrypter(usr)
+	passwd, err := dec.Decrypt(ciphertext)
+	if err != nil {
+		return false, err
+	}
+	return Login(usr, string(passwd))
 }
